@@ -218,7 +218,7 @@ order by hidden, row_no, descr
 		if err == nil or err == false then
 		    tb._sys, err = func_execute(tran,
 [[
-select 'data_ts' param_id, param_value from sysparams where param_id = %db_id% + ':TS'
+select 'data_ts' param_id, param_value from sysparams where param_id = concat(%db_id%,':TS')
     union
 select param_id, param_value from sysparams where param_id = 'db:id'
 ]]
