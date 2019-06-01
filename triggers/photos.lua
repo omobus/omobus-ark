@@ -193,7 +193,7 @@ select
 from brands b
     left join manufacturers m on m.db_id = b.db_id and m.manuf_id = b.manuf_id
 where b.db_id = %db_id% and b.brand_id in (select distinct brand_id from photos where db_id = %db_id% and fix_year = %year%)
-order by m.competitor nulls first, b.row_no, b.descr
+order by /*m.competitor nulls first,*/ b.row_no, b.descr
 ]]
 			, "//photos/brands", {db_id = db_id, year = params.year})
 		end
@@ -218,9 +218,9 @@ order by hidden, row_no, descr
 		if err == nil or err == false then
 		    tb._sys, err = func_execute(tran,
 [[
-select 'data_ts' param_id, param_value from sysparams where param_id=format('%s:TS',%db_id%)
+select 'data_ts' param_id, param_value from sysparams where param_id = %db_id% + ':TS'
     union
-select param_id, param_value from sysparams where param_id='db:id'
+select param_id, param_value from sysparams where param_id = 'db:id'
 ]]
 			, "//photos/_sys", {db_id = db_id})
 		end

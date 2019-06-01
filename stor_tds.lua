@@ -25,6 +25,10 @@ local TDS_VERSION = {
     "7.2/Microsoft SQL Server 2005"
 }
 
+local function isnull(arg)
+    return type(arg) == "table" and arg.null == true;
+end
+
 local function gettdsversion(tds)
     return TDS_VERSION[(tds >= 1 and tds <= 10) and (tds + 1) or 1]
 end
@@ -60,7 +64,11 @@ local function sqlexec(dbproc, query, params)
     if params ~= nil then
 	local tmp = query
 	for k,v in pairs(params) do
-	    tmp = tmp:replace(string.format("%%%s%%", k), escape(v))
+	    if isnull(v) then
+		tmp = tmp:replace(string.format("%%%s%%", k), 'null')
+	    else
+		tmp = tmp:replace(string.format("%%%s%%", k), escape(v))
+	    end
 	end
 	query = tmp
     end
@@ -77,7 +85,7 @@ local function putdata(dbproc, colname, coltype, len, ptr, tb)
     end
     if coltype == tds.SYBCHAR or coltype == tds.SYBTEXT then
 	tb[colname] = ptr
-    elseif coltype == tds.SYBIMAGE or tds.SYBBINARY then
+    elseif coltype == tds.SYBIMAGE or coltype == tds.SYBBINARY then
 	tb[colname] = ptr
     else
 	tb[colname] = dbproc:dbconvert(coltype, ptr)
@@ -90,20 +98,21 @@ end
 function M.init()
     tds.dbinit()
     tds.dbmsghandle(function(msgno, msgstate, severity, msgtext, srvname, procname, line)
-	    log.i(string.format("%s:%d Msg %d, Level %d, State %d, Server %s. %s",
+	    local x = severity > 0 and log.i or log.d
+	    x(string.format("%s:%d Msg %d, Level %d, State %d, Server %s. %s",
 		debug.getinfo(1,'S').short_src, debug.getinfo(1, 'l').currentline, 
 		msgno, severity, msgstate, srvname, msgtext));
 	end
     )
     tds.dberrhandle(function(severity, dberr, oserr, dberrstr, oserrstr)
 	    if dberrstr ~= nil then
-		log.i(string.format("%s:%d DB-Library error: %s", 
+		log.e(string.format("%s:%d DB-Library error: %s", 
 		    debug.getinfo(1,'S').short_src, debug.getinfo(1, 'l').currentline, 
 		    dberrstr))
 		M._errflag = true;
 	    end
 	    if oserrstr ~= nil then
-		log.i(string.format("%s:%d operating-system: %s", 
+		log.e(string.format("%s:%d operating-system: %s", 
 		    debug.getinfo(1,'S').short_src, debug.getinfo(1, 'l').currentline, 
 		    oserrstr))
 		M._errflag = true;

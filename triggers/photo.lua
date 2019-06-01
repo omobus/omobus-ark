@@ -19,7 +19,7 @@ function M.main(res, db_id, method, params)
 	stor.init()
 	local tb, err = stor.get(function(tran, func_execute) return func_execute(tran,
 [[
-select photo from thumbnails where db_id = %db_id% and ref_id = %ref_id%
+select [public].photo_get(%db_id%, %ref_id%) as photo
 ]]
 	    , "//photo", {db_id = db_id, ref_id = params.ref})
 	end)

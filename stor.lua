@@ -2,7 +2,7 @@
 -- Copyright (c) 2006 - 2019 omobus-console authors, see the included COPYRIGHT file.
 
 local config = require 'config'
-local stor = require 'stor_pgsql'
+local stor = config.data._LIB or require 'stor_pgsql'
 
 local M = {} -- public interface
 
