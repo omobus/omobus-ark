@@ -79,7 +79,7 @@ function websvc_main()
 		else
 		    local ptr = triggers[ string.sub(script, #V.package_code + 3) ]
 		    if ptr ~= nil then
-			log.w(string.format("[audit] tokenid %s from %s -> permission granted -> %s", params.tid, env.REMOTE_ADDR, script))
+			log.i(string.format("[audit] tokenid %s from %s -> permission granted -> %s", params.tid, env.REMOTE_ADDR, script))
 			ptr.main(res, db_id, env.REQUEST_METHOD, params, content, env.CONTENT_TYPE, env.REMOTE_ADDR)
 		    else
 			scgi.writeHeader(res, 404, {["Content-Type"] = mime.json .. "; charset=utf-8"})
