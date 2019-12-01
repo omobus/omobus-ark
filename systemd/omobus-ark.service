@@ -9,6 +9,9 @@ ExecStartPre=/bin/mkdir -m 0755 -p /var/run/omobus-scgi.d
 ExecStartPre=/bin/chown omobus:omobus /var/run/omobus-scgi.d
 ExecStart=/usr/local/sbin/omobus-scgid -x -u omobus -g omobus -p /var/run/omobus-scgi.d/ark.pid -c /var/lib/omobus-scgi.d -s /var/www/run/omobus-ark.sock /etc/omobus-scgi.d/ark/main.lua
 ExecStop=/bin/kill -s USR1 $MAINPID
+#RemainAfterExit=no
+#Restart=on-failure
+#RestartSec=5s
 
 [Install]
 WantedBy=multi-user.target
