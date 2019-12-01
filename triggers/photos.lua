@@ -143,7 +143,7 @@ order by descr
 		if err == nil or err == false then
 		    tb.objects.cities, err = func_execute(tran,
 [[
-select city_id, pid, ftype, descr, country_id, population, hidden from cities
+select city_id, pid, ftype, descr, country_id, hidden from cities
     where db_id = %db_id%
 order by descr
 ]]
