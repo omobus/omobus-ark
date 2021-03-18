@@ -37,6 +37,9 @@ function M.main(res, db_id, method, params)
 	elseif params.brand_id ~= nil and not validate.isuid(params.brand_id) then
 	    scgi.writeHeader(res, 400, {["Content-Type"] = mime.json .. "; charset=utf-8"})
 	    scgi.writeBody(res, "{\"msg\":\"Invalid [brand_id] parameter.\"}")
+	elseif params.asp_type_id ~= nil and not validate.isuid(params.asp_type_id) then
+	    scgi.writeHeader(res, 400, {["Content-Type"] = mime.json .. "; charset=utf-8"})
+	    scgi.writeBody(res, "{\"msg\":\"Invalid [asp_type_id] parameter.\"}")
 	elseif params.photo_type_id ~= nil and not validate.isuid(params.photo_type_id) then
 	    scgi.writeHeader(res, 400, {["Content-Type"] = mime.json .. "; charset=utf-8"})
 	    scgi.writeBody(res, "{\"msg\":\"Invalid [photo_type_id] parameter.\"}")
@@ -50,19 +53,29 @@ function M.main(res, db_id, method, params)
 	    tb.photos, err = stor.get(function(tran, func_execute, engine_code) return func_execute(tran, 
 [[
 select
-    x.doc_id, x.fix_month, left(x.fix_dt,10) fix_date, x.placement_id, x.brand_id, x.photo_type_id, x.photo ref_id, x.doc_note, 
+    x.doc_id, 
+    x.fix_month, 
+    left(x.fix_dt,10) fix_date, 
+    x.placement_id, 
+    x.brand_id, 
+    x.asp_type_id,
+    x.photo_type_id, 
+    x.photo ref_id, 
+    x.doc_note, 
     [public].uids_out(x.photo_param_ids) photo_param_ids, case when r.doc_id is null then null else 1 end revoked
 from photos x
     left join revocations r on r.db_id = x.db_id and r.doc_id = x.doc_id and r.hidden = 0
 where x.db_id = %db_id% and x.fix_year = %year% and x.account_id = %account_id%
     and (%placement_id% is null or x.placement_id = %placement_id%)
     and (%brand_id% is null or x.brand_id = %brand_id%)
+    and (%asp_type_id% is null or x.asp_type_id = %asp_type_id%)
     and (%photo_type_id% is null or x.photo_type_id = %photo_type_id%)
-order by fix_dt desc, doc_id
+order by left(fix_dt,10) desc, fix_dt, doc_id
 ]]
 		, "//photos/blobs", {db_id = db_id, year = params.year, account_id = params.account_id,
 			placement_id = params.placement_id == null and stor.NULL or params.placement_id,
 			brand_id = params.brand_id == null and stor.NULL or params.brand_id,
+			asp_type_id = params.asp_type_id == null and stor.NULL or params.asp_type_id,
 			photo_type_id = params.photo_type_id == null and stor.NULL or params.photo_type_id
 		    })
 	    end)
@@ -90,6 +103,9 @@ order by fix_dt desc, doc_id
 	elseif params.brand_id ~= nil and not validate.isuid(params.brand_id) then
 	    scgi.writeHeader(res, 400, {["Content-Type"] = mime.json .. "; charset=utf-8"})
 	    scgi.writeBody(res, "{\"msg\":\"Invalid [brand_id] parameter.\"}")
+	elseif params.asp_type_id ~= nil and not validate.isuid(params.asp_type_id) then
+	    scgi.writeHeader(res, 400, {["Content-Type"] = mime.json .. "; charset=utf-8"})
+	    scgi.writeBody(res, "{\"msg\":\"Invalid [asp_type_id] parameter.\"}")
 	elseif params.photo_type_id ~= nil and not validate.isuid(params.photo_type_id) then
 	    scgi.writeHeader(res, 400, {["Content-Type"] = mime.json .. "; charset=utf-8"})
 	    scgi.writeBody(res, "{\"msg\":\"Invalid [photo_type_id] parameter.\"}")
@@ -102,6 +118,7 @@ order by fix_dt desc, doc_id
 		tb._request.year = params.year
 		tb._request.placement_id = params.placement_id
 		tb._request.brand_id = params.brand_id
+		tb._request.asp_type_id = params.asp_type_id
 		tb._request.photo_type_id = params.photo_type_id
 		tb.rows, err = func_execute(tran,
 [[
@@ -118,6 +135,7 @@ from (
 	where db_id = %db_id% and fix_year = %year%
 	    and (%placement_id% is null or placement_id = %placement_id%)
 	    and (%brand_id% is null or brand_id = %brand_id%)
+	    and (%asp_type_id% is null or asp_type_id = %asp_type_id%)
 	    and (%photo_type_id% is null or photo_type_id = %photo_type_id%)
     group by db_id, account_id
 ) p, accounts a
@@ -129,6 +147,7 @@ order by descr, address, account_id
 			year = params.year, 
 			placement_id = params.placement_id == null and stor.NULL or params.placement_id,
 			brand_id = params.brand_id == null and stor.NULL or params.brand_id,
+			asp_type_id = params.asp_type_id == null and stor.NULL or params.asp_type_id,
 			photo_type_id = params.photo_type_id == null and stor.NULL or params.photo_type_id
 		    })
 		if err == nil or err == false then
@@ -152,7 +171,7 @@ order by descr
 		if err == nil or err == false then
 		    tb.objects.retail_chains, err = func_execute(tran,
 [[
-select rc_id, descr, ka_code, hidden from retail_chains
+select rc_id, descr, ka_type, hidden from retail_chains
     where db_id = %db_id%
 order by descr
 ]]
@@ -196,6 +215,15 @@ where b.db_id = %db_id% and b.brand_id in (select distinct brand_id from photos 
 order by /*m.competitor nulls first,*/ b.row_no, b.descr
 ]]
 			, "//photos/brands", {db_id = db_id, year = params.year})
+		end
+		if err == nil or err == false then
+		    tb.objects.asp_types, err = func_execute(tran,
+[[
+select asp_type_id, descr, hidden from asp_types
+    where db_id = %db_id% and asp_type_id in (select distinct asp_type_id from photos where db_id = %db_id% and fix_year = %year%)
+order by hidden, row_no, descr
+]]
+			, "//photos/asp_types", {db_id = db_id, year = params.year})
 		end
 		if err == nil or err == false then
 		    tb.objects.photo_types, err = func_execute(tran,
