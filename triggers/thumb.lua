@@ -1,7 +1,5 @@
 -- -*- Lua -*-
--- This file is a part of the omobus-console project.
--- Copyright (c) 2006 - 2018 ak-obs, Ltd. <info@omobus.net>.
--- Author: Igor Artemov <i_artemov@omobus.net>.
+-- Copyright (c) 2006 - 2021 omobus-ark authors, see the included COPYRIGHT file.
 
 local M = {} -- public interface
 
