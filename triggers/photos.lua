@@ -121,8 +121,28 @@ order by left(fix_dt,10) desc, fix_dt, doc_id
 		tb.rows, err = func_execute(tran,
 [[
 select 
-    a.account_id, a.code, a.descr, a.address, a.region_id, a.city_id, a.rc_id, a.chan_id, a.poten_id, a.cash_register, a.hidden, 
-    p.m1, p.m2, p.m3, p.m4, p.m5, p.m6, p.m7, p.m8, p.m9, p.m10, p.m11, p.m12
+    a.account_id, 
+    a.code, 
+    a.descr, 
+    a.address, 
+    a.region_id, 
+    a.city_id, 
+    a.rc_id, 
+    a.chan_id, 
+    a.poten_id, 
+    a.hidden, 
+    p.m1, 
+    p.m2, 
+    p.m3, 
+    p.m4, 
+    p.m5, 
+    p.m6, 
+    p.m7, 
+    p.m8, 
+    p.m9, 
+    p.m10, 
+    p.m11, 
+    p.m12
 from (
     select db_id, account_id, 
 	sum(case fix_month when 1 then 1 else 0 end) m1, sum(case fix_month when 2 then 1 else 0 end) m2, sum(case fix_month when 3 then 1 else 0 end) m3, 
