@@ -322,6 +322,8 @@ select param_id, param_value from sysparams where param_id = 'db:id'
 [[
 select distinct fix_year from photos
     where db_id = %db_id%
+	and (extract(year from current_timestamp) - coalesce((select param_value::int from sysparams where param_id='gc:keep_alive'),3)) <= fix_year
+	and fix_year <= extract(year from current_timestamp)
 order by 1 desc
 ]]
 	    , "//photos/blobs", {db_id = db_id, year = params.year, account_id = params.account_id})
