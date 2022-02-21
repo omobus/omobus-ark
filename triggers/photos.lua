@@ -60,7 +60,8 @@ select
     x.photo_type_id, 
     x.photo ref_id, 
     x.doc_note, 
-    [public].uids_out(x.photo_param_ids) photo_param_ids, case when r.doc_id is null then null else 1 end revoked
+    [public].uids_out(x.photo_param_ids) photo_param_ids, 
+    case when r.doc_id is null then null else 1 end revoked
 from photos x
     left join revocations r on r.db_id = x.db_id and r.doc_id = x.doc_id and r.hidden = 0
 where x.db_id = %db_id% and x.fix_year = %year% and x.account_id = %account_id%
@@ -322,11 +323,11 @@ select param_id, param_value from sysparams where param_id = 'db:id'
 [[
 select distinct fix_year from photos
     where db_id = %db_id%
-	and (extract(year from current_timestamp) - coalesce((select param_value::int from sysparams where param_id='gc:keep_alive'),3)) <= fix_year
-	and fix_year <= extract(year from current_timestamp)
+	and (year(current_timestamp) - coalesce((select cast(param_value as int) from sysparams where param_id='gc:keep_alive'),3)) <= fix_year
+	and fix_year <= year(current_timestamp)
 order by 1 desc
 ]]
-	    , "//photos/blobs", {db_id = db_id, year = params.year, account_id = params.account_id})
+	    , "//photos/years", {db_id = db_id, year = params.year, account_id = params.account_id})
 	end)
 	stor.cleanup()
 
