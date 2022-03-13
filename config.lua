@@ -22,7 +22,7 @@ M.ldap		= {
 -- *** LTS storage parameters ***
 M.data 		= {
     --_LIB 	= require 'stor_tds',
-    server	= "hostaddr=127.0.0.1 port=5432",
+    server	= "hostaddr=127.0.0.1 port=5432 application_name=omobus-ark",
     storage	= "omobus-lts-db",
     user	= "omobus",
     password	= "omobus"
