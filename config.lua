@@ -22,6 +22,8 @@ M.ldap		= {
 -- *** LTS storage parameters ***
 M.data 		= {
     --_LIB 	= require 'stor_tds',
+    --fstab: /usr/lib/x86_64-linux-gnu/gconv  /var/lib/omobus-scgi.d/usr/lib/x86_64-linux-gnu/gconv  none   bind
+    --cp /etc/omobus.d/freetds.conf /var/lib/omobus-scgi.d/freetds.conf
     server	= "hostaddr=127.0.0.1 port=5432 application_name=omobus-ark",
     storage	= "omobus-lts-db",
     user	= "omobus",
